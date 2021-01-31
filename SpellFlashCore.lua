@@ -1,4 +1,4 @@
-local MinBuild, OverBuild, Build = 50000, 0, select(4, GetBuildInfo())
+local MinBuild, OverBuild, Build = 80000, 0, select(4, GetBuildInfo())
 if Build < (MinBuild or 0) or ( (OverBuild or 0) > 0 and Build >= OverBuild ) then return end
 local AddonName, a = ...
 a.AddonName = AddonName
@@ -253,6 +253,30 @@ FrameNames.Action = {
 	"VFLButton", -- OpenRDX
 }
 
+local function FrameScriptCheck(script,tipe)
+	if tipe == "Form" then
+		for i=1, 10, 1 do
+			if script == _G["StanceButton" .. i]:GetScript("OnClick") then return true end
+		end
+	elseif tipe == "Pet" then
+		for i=1, 10, 1 do
+			if script == _G["PetActionButton" .. i]:GetScript("OnClick") then return true end
+		end
+	elseif tipe == "Action" then
+		local BarNames = {"Action","MultiBarBottomRight","MultiBarBottomLeft","MultiBarRight","MultiBarLeft"}
+		for _, BarName in pairs(BarNames) do
+			for i=1, 12, 1 do
+				if script == _G[BarName .. "Button" .. i]:GetScript("OnClick") then return true end
+			end
+		end
+	elseif tipe == "Vehicle" then
+		for i=1, 6, 1 do
+			if script == _G["OverrideActionBarButton" .. i]:GetScript("OnClick") then return true end
+		end
+	end
+	return false
+end
+
 local function RegisterFrames()
 	FRAMESREGISTERED = nil
 	wipe(ButtonFrames.Action)
@@ -273,6 +297,7 @@ local function RegisterFrames()
         original = LibStub:GetLibrary("LibActionButton-1.0", true),
         elvui = LibStub:GetLibrary("LibActionButton-1.0-ElvUI", true),
     }
+	
     for _, lib in pairs(LAB) do
         for frame in pairs(lib:GetAllButtons()) do
             if not DuplicateFrame(frame) then
@@ -281,21 +306,22 @@ local function RegisterFrames()
         end
     end
 	local frame = EnumerateFrames()
+
 	while frame do
 		if type(frame) == "table" and type(frame[0]) == "userdata" and frame.IsProtected and frame.GetObjectType and frame.GetScript and frame:GetObjectType() == "CheckButton" and frame:IsProtected() then
-			if frame:GetScript("OnClick") == StanceButton1:GetScript("OnClick") then
+			if FrameScriptCheck(frame:GetScript("OnClick"),"Form") then
 				if not DuplicateFrame(frame) then
 					ButtonFrames.Form[frame] = 1
 				end
-			elseif frame:GetScript("OnClick") == PetActionButton1:GetScript("OnClick") then
+			elseif FrameScriptCheck(frame:GetScript("OnClick"),"Pet") then
 				if not DuplicateFrame(frame) then
 					ButtonFrames.Pet[frame] = 1
 				end
-			elseif frame:GetScript("OnClick") == ActionButton1:GetScript("OnClick") then
+			elseif FrameScriptCheck(frame:GetScript("OnClick"),"Action") then
 				if not DuplicateFrame(frame) then
 					ButtonFrames.Action[frame] = 1
 				end
-			elseif frame:GetScript("OnClick") == OverrideActionBarButton1:GetScript("OnClick") then
+			elseif FrameScriptCheck(frame:GetScript("OnClick"),"Vehicle") then
 				if not DuplicateFrame(frame) then
 					ButtonFrames.Vehicle[frame] = 1
 				end
@@ -303,9 +329,9 @@ local function RegisterFrames()
 		end
 		frame = EnumerateFrames(frame)
 	end
+	
 	FRAMESREGISTERED = 1
 end
-
 
 local COLORTABLE = {
 	white = {r=1, g=1, b=1},
