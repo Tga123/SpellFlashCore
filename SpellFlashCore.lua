@@ -208,40 +208,33 @@ local function RegisterButtons()
 					end
 				elseif Type == "item" then
 					local ID = frame.ParentButton.ItemId
-					local item = Item:CreateFromItemID(ID)
-					item:ContinueOnItemLoad(function()
-						local Name = SpellFlashCore.ItemName(ID) or frame.ParentButton.ItemName
-						if type(Name) == "string" and Name ~= "" then
-							if not Frames.Item[Name] then
-								Frames.Item[Name] = a:CreateTable()
-							end
-							Frames.Item[Name][frame] = 1
-							SpellFlashCore.debug("ButtonForge"..i, Type, ID, "=", Name)
+					local Name = SpellFlashCore.ItemName(ID) or frame.ParentButton.ItemName
+					if type(Name) == "string" and Name ~= "" then
+						if not Frames.Item[Name] then
+							Frames.Item[Name] = a:CreateTable()
 						end
-					end)
+						Frames.Item[Name][frame] = 1
+						SpellFlashCore.debug("ButtonForge"..i, Type, ID, "=", Name)
+					end
 				elseif Type == "spell" then
 					local ID = frame.ParentButton.SpellId
-					local spell = Spell:CreateFromSpellID(ID)
-					if not spell:IsSpellEmpty() then
-						spell:ContinueOnSpellLoad(function()
-							local Name = SpellFlashCore.SpellName(ID) or frame.ParentButton.SpellName
-							if type(Name) == "string" and Name ~= "" then
-								if not Frames.Spell[Name] then
-									Frames.Spell[Name] = a:CreateTable()
-								end
-								Frames.Spell[Name][frame] = 1
-								SpellFlashCore.debug("ButtonForge"..i, Type, ID, "=", Name)
-							end
-						end)
+					local Name = SpellFlashCore.SpellName(ID) or frame.ParentButton.SpellName
+					if type(Name) == "string" and Name ~= "" then
+						if not Frames.Spell[Name] then
+							Frames.Spell[Name] = a:CreateTable()
+						end
+						Frames.Spell[Name][frame] = 1
+						SpellFlashCore.debug("ButtonForge"..i, Type, ID, "=", Name)
 					end
 				elseif Type == "flyout" then
 					local ID = frame.ParentButton.FlyoutId
-					if ID then
-						if not Frames.Spell[ID] then
-							Frames.Spell[ID] = a:CreateTable()
+					local Name = SpellFlashCore.SpellName(ID) or ID
+					if Name then
+						if not Frames.Spell[Name] then
+							Frames.Spell[Name] = a:CreateTable()
 						end
-						Frames.Spell[ID][frame] = 1
-						SpellFlashCore.debug("ButtonForge"..i, Type, ID, "=", ID)
+						Frames.Spell[Name][frame] = 1
+						SpellFlashCore.debug("ButtonForge"..i, Type, ID, "=", Name)
 					end
 				end
 			end
