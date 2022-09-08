@@ -265,6 +265,7 @@ FrameNames.Pet = {
 
 FrameNames.Action = {
 	"VFLButton", -- OpenRDX
+    "DominosActionButton", -- Dominos	
 }
 
 local function FrameScriptCheck(script,tipe)
