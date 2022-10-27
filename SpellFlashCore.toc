@@ -1,5 +1,5 @@
-﻿## Interface: 90200
-## Version: 2.2
+﻿## Interface: 100002
+## Version: 2.3
 ## Author: BigRedBrent & LightSpell
 ## Title: SpellFlashCore
 ## Notes: This addon contains the button flashing functionality.
