@@ -1,11 +1,20 @@
-local MinBuild, OverBuild, Build = 80000, 0, select(4, GetBuildInfo())
+local MinBuild, OverBuild, Build = 100000, 0, select(4, GetBuildInfo())
 if Build < (MinBuild or 0) or ( (OverBuild or 0) > 0 and Build >= OverBuild ) then return end
 local AddonName, a = ...
 a.AddonName = AddonName
 local AddonTitle = select(2, GetAddOnInfo(AddonName))
 local PlainAddonTitle = AddonTitle:gsub("|c........", ""):gsub("|r", "")
 local L = a.Localize
-SpellFlashCore = {}
+function a.print(...)
+	print("|cFF0099FF["..PlainAddonTitle.."]|r", ...)
+end
+if SpellFlashCore and not SpellFlashCore.LS then
+	a.print(L["Old uncompletable version of SFC detected, shuttingdown. \r\n Please update other copies of SFC before use."])
+	return
+end
+SpellFlashCore = LibStub:NewLibrary("SpellFlashCore", tonumber("@project-date-integer@") or tonumber(date("%Y%m%d%H%M%S")))
+if not SpellFlashCore then return end
+SpellFlashCore.LS = true
 local FrameNames = {}
 local ButtonFrames = {}
 ButtonFrames.Action = {}
@@ -91,10 +100,6 @@ function SpellFlashCore.CopyTable(Table)
 	return t
 end
 
-function a.print(...)
-	print("|cFF00FFFF["..PlainAddonTitle.."]|r", ...)
-end
-
 a.PetActions = {
 	["Attack"] = "PET_ACTION_ATTACK",
 	["Follow"] = "PET_ACTION_FOLLOW",
@@ -140,7 +145,7 @@ local function RegisterButtons()
 	Frames.Macro = a:CreateTable(Frames.Macro, 1)
 	Frames.Item = a:CreateTable(Frames.Item, 1)
 	SpellFlashCore.debug("-     Button Slots Found:")
-	for i = 1, 144 do
+	for i = 1, 180 do
 		if HasAction(i) then
 			local Type, ID = GetActionInfo(i)
 			if Type == "macro" then
@@ -278,7 +283,7 @@ local function FrameScriptCheck(script,tipe)
 			if script == _G["PetActionButton" .. i]:GetScript("OnClick") then return true end
 		end
 	elseif tipe == "Action" then
-		local BarNames = {"Action","MultiBarBottomRight","MultiBarBottomLeft","MultiBarRight","MultiBarLeft"}
+		local BarNames = {"Action","MultiBarBottomRight","MultiBarBottomLeft","MultiBarRight","MultiBarLeft","MultiBar5","MultiBar6","MultiBar7"}
 		for _, BarName in pairs(BarNames) do
 			for i=1, 12, 1 do
 				if script == _G[BarName .. "Button" .. i]:GetScript("OnClick") then return true end
@@ -369,14 +374,14 @@ local function FlashFrameOnUpdate(self, elapsed)
 		if self.show then
 			self.modifier = self.FlashModifier
 			self.FlashModifier = self.modifier - self.modifier * TimeSinceLastUpdate
-			self.alpha = self.FlashModifier * self.FlashBrightness
+			self.alpha = self.FixedBrightness and self.FlashBrightness or (self.FlashModifier * self.FlashBrightness)
 			if self.modifier < 0.1 or self.alpha <= 0 then
 				self.show = false
 				self:SetAlpha(0)
 				self:Hide()
 			else
-				self.FlashTexture:SetHeight(self.modifier * self:GetHeight() * self.FlashSize)
-				self.FlashTexture:SetWidth(self.modifier * self:GetWidth() * self.FlashSize)
+				self.FlashTexture:SetHeight(self.FixedSize and (self:GetHeight() * self.FlashSize) or (self.modifier * self:GetHeight() * self.FlashSize))
+				self.FlashTexture:SetWidth(self.FixedSize and (self:GetWidth() * self.FlashSize) or (self.modifier * self:GetWidth() * self.FlashSize))
 				self.FlashTexture:SetAlpha(self.alpha)
 			end
 		else
@@ -570,7 +575,7 @@ end
 FrameFlashEventFrame:SetScript("OnUpdate", FrameFlashOnUpdate)
 FrameFlashEventFrame:Show()
 
-function SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+function SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 	if frame and frame:IsVisible() then
 		if blink and frame:GetName() and not FrameIsFading(frame) then
 			FrameFlash(frame, 0, 0.2, 0.2, true, 0, 0)
@@ -580,15 +585,21 @@ function SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
 			frame[FlashFrameName]:SetAlpha(0)
 			frame[FlashFrameName]:SetAllPoints(frame)
 			frame[FlashFrameName].FlashTexture = frame[FlashFrameName]:CreateTexture(nil, "OVERLAY")
-			frame[FlashFrameName].FlashTexture:SetTexture("Interface\\Cooldown\\star4")
+			if texture and C_Texture.GetAtlasInfo(texture) then
+				frame[FlashFrameName].FlashTexture:SetAtlas(texture or "AftLevelup-WhiteStarBurst")
+			else
+				frame[FlashFrameName].FlashTexture:SetTexture(texture or "Interface\\Cooldown\\star4")
+			end
 			frame[FlashFrameName].FlashTexture:SetPoint("CENTER", frame[FlashFrameName], "CENTER")
 			frame[FlashFrameName].FlashTexture:SetBlendMode("ADD")
 			frame[FlashFrameName].UpdateInterval = 0.02
 			frame[FlashFrameName].TimeSinceLastUpdate = 0
 			frame[FlashFrameName]:SetScript("OnUpdate", FlashFrameOnUpdate)
 		end
-		frame[FlashFrameName].FlashModifier = 1
+		frame[FlashFrameName].FlashModifier = 1		
+		frame[FlashFrameName].FixedSize = fixedSize or false
 		frame[FlashFrameName].FlashSize = (size or 240) / 100
+		frame[FlashFrameName].FixedBrightness = fixedBrightness or false
 		frame[FlashFrameName].FlashBrightness = (brightness or 100) / 100
 		frame[FlashFrameName].FlashTexture:SetHeight(frame[FlashFrameName]:GetHeight() * frame[FlashFrameName].FlashSize)
 		frame[FlashFrameName].FlashTexture:SetWidth(frame[FlashFrameName]:GetWidth() * frame[FlashFrameName].FlashSize)
@@ -613,15 +624,15 @@ function SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
 	return false
 end
 
-local function FlashActionButton(button, color, size, brightness, blink)
+local function FlashActionButton(button, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 	if FRAMESREGISTERED and button then
 		for frame in pairs(ButtonFrames.Action) do
 			if frame._state_action then
 				if frame._state_action == button then
-					SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+					SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 				end
 			elseif frame.action == button then
-				SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+				SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 			end
 		end
 	end
@@ -808,10 +819,10 @@ function SpellFlashCore.ItemFlashable(ItemName, NoMacros)
 	return SpellFlashCore.Flashable(SpellFlashCore.ItemName(ItemName) or ItemName, NoMacros)
 end
 
-function SpellFlashCore.FlashAction(SpellName, color, size, brightness, blink, NoMacros)
+function SpellFlashCore.FlashAction(SpellName, color, size, brightness, blink, NoMacros, texture, fixedSize, fixedBrightness)
 	if type(SpellName) == "table" then
 		for _, SpellName in ipairs(SpellName) do
-			SpellFlashCore.FlashAction(SpellName, color, size, brightness, blink, NoMacros)
+			SpellFlashCore.FlashAction(SpellName, color, size, brightness, blink, NoMacros, texture, fixedSize, fixedBrightness)
 		end
 	elseif FRAMESREGISTERED and BUTTONSREGISTERED then
 		local SpellName, PlainName = SpellName, SpellName
@@ -830,22 +841,22 @@ function SpellFlashCore.FlashAction(SpellName, color, size, brightness, blink, N
 		if SpellName then
 			if Buttons.Spell[SpellName] then
 				for button in pairs(Buttons.Spell[SpellName]) do
-					FlashActionButton(button, color, size, brightness, blink)
+					FlashActionButton(button, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 				end
 			end
 			if Buttons.Item[SpellName] then
 				for button in pairs(Buttons.Item[SpellName]) do
-					FlashActionButton(button, color, size, brightness, blink)
+					FlashActionButton(button, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 				end
 			end
 			if Frames.Spell[SpellName] then
 				for frame in pairs(Frames.Spell[SpellName]) do
-					SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+					SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 				end
 			end
 			if Frames.Item[SpellName] then
 				for frame in pairs(Frames.Item[SpellName]) do
-					SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+					SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 				end
 			end
 			if not NoMacros and type(SpellName) == "string" and ( GetSpellInfo(SpellName) or GetItemCount(SpellName) > 0 ) then
@@ -855,7 +866,7 @@ function SpellFlashCore.FlashAction(SpellName, color, size, brightness, blink, N
 					local name, Texture, body = GetMacroInfo(tonumber(ID))
 					if Texture and ( Texture == SpellTexture or Texture == ItemTexture ) and body and body:lower():find(PlainName:lower(), nil, true) then
 						for button in pairs(Table) do
-							FlashActionButton(button, color, size, brightness, blink)
+							FlashActionButton(button, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 						end
 					end
 				end
@@ -863,7 +874,7 @@ function SpellFlashCore.FlashAction(SpellName, color, size, brightness, blink, N
 					local name, Texture, body = GetMacroInfo(tonumber(ID))
 					if Texture and ( Texture == SpellTexture or Texture == ItemTexture ) and body and body:lower():find(PlainName:lower(), nil, true) then
 						for frame in pairs(Table) do
-							SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+							SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 						end
 					end
 				end
@@ -872,20 +883,20 @@ function SpellFlashCore.FlashAction(SpellName, color, size, brightness, blink, N
 	end
 end
 
-function SpellFlashCore.FlashItem(ItemName, color, size, brightness, blink, NoMacros)
+function SpellFlashCore.FlashItem(ItemName, color, size, brightness, blink, NoMacros, texture, fixedSize, fixedBrightness)
 	if type(ItemName) == "table" then
 		for _, ItemName in ipairs(ItemName) do
-			SpellFlashCore.FlashItem(ItemName, color, size, brightness, blink, NoMacros)
+			SpellFlashCore.FlashItem(ItemName, color, size, brightness, blink, NoMacros, texture, fixedSize, fixedBrightness)
 		end
 	else
-		SpellFlashCore.FlashAction(SpellFlashCore.ItemName(ItemName) or ItemName, color, size, brightness, blink, NoMacros)
+		SpellFlashCore.FlashAction(SpellFlashCore.ItemName(ItemName) or ItemName, color, size, brightness, blink, NoMacros, texture, fixedSize, fixedBrightness)
 	end
 end
 
-function SpellFlashCore.FlashVehicle(SpellName, color, size, brightness, blink)
+function SpellFlashCore.FlashVehicle(SpellName, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 	if type(SpellName) == "table" then
 		for _, SpellName in ipairs(SpellName) do
-			SpellFlashCore.FlashVehicle(SpellName, color, size, brightness, blink)
+			SpellFlashCore.FlashVehicle(SpellName, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 		end
 	elseif FRAMESREGISTERED and UnitInVehicle("player") then
 		local SpellName = SpellName
@@ -899,19 +910,19 @@ function SpellFlashCore.FlashVehicle(SpellName, color, size, brightness, blink)
 					for frame in pairs(ButtonFrames.Vehicle) do
 						if frame._state_action then
 							if frame._state_action == i then
-								SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+								SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 							end
 						elseif frame.action == i then
-							SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+							SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 						end
 					end
 					for frame in pairs(ButtonFrames.Action) do
 						if frame._state_action then
 							if frame._state_action == i then
-								SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+								SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 							end
 						elseif frame.action == i then
-							SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+							SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 						end
 					end
 				end
@@ -920,10 +931,10 @@ function SpellFlashCore.FlashVehicle(SpellName, color, size, brightness, blink)
 	end
 end
 
-function SpellFlashCore.FlashPet(SpellName, color, size, brightness, blink)
+function SpellFlashCore.FlashPet(SpellName, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 	if type(SpellName) == "table" then
 		for _, SpellName in ipairs(SpellName) do
-			SpellFlashCore.FlashPet(SpellName, color, size, brightness, blink)
+			SpellFlashCore.FlashPet(SpellName, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 		end
 	elseif FRAMESREGISTERED then
 		local SpellName = SpellName
@@ -937,10 +948,10 @@ function SpellFlashCore.FlashPet(SpellName, color, size, brightness, blink)
 					for frame in pairs(ButtonFrames.Pet) do
 						if frame.id then
 							if frame.id == n then
-								SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+								SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 							end
 						elseif frame:GetID() == n then
-							SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+							SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 						end
 					end
 				end
@@ -949,10 +960,10 @@ function SpellFlashCore.FlashPet(SpellName, color, size, brightness, blink)
 	end
 end
 
-function SpellFlashCore.FlashForm(SpellName, color, size, brightness, blink)
+function SpellFlashCore.FlashForm(SpellName, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 	if type(SpellName) == "table" then
 		for _, SpellName in ipairs(SpellName) do
-			SpellFlashCore.FlashForm(SpellName, color, size, brightness, blink)
+			SpellFlashCore.FlashForm(SpellName, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 		end
 	elseif FRAMESREGISTERED then
 		local SpellName = SpellName
@@ -965,10 +976,10 @@ function SpellFlashCore.FlashForm(SpellName, color, size, brightness, blink)
 					for frame in pairs(ButtonFrames.Form) do
 						if frame.id then
 							if frame.id == n then
-								SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+								SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 							end
 						elseif frame:GetID() == n then
-							SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)
+							SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 						end
 					end
 				end
@@ -985,9 +996,9 @@ local TotemCallFrames = {
 	"DominosSpellButton32", -- Dominos
 }
 
-function SpellFlashCore.FlashTotemCall(color, size, brightness, blink)
+function SpellFlashCore.FlashTotemCall(color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 	for _, frame in ipairs(TotemCallFrames) do
-		SpellFlashCore.FlashFrame(_G[frame], color, size, brightness, blink)
+		SpellFlashCore.FlashFrame(_G[frame], color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 	end
 end
 
@@ -998,9 +1009,9 @@ local TotemRecallFrames = {
 	"DominosSpellButton33", -- Dominos
 }
 
-function SpellFlashCore.FlashTotemRecall(color, size, brightness, blink)
+function SpellFlashCore.FlashTotemRecall(color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 	for _, frame in ipairs(TotemRecallFrames) do
-		SpellFlashCore.FlashFrame(_G[frame], color, size, brightness, blink)
+		SpellFlashCore.FlashFrame(_G[frame], color, size, brightness, blink, texture, fixedSize, fixedBrightness)
 	end
 end
 

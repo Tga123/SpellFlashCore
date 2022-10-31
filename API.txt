@@ -5,7 +5,7 @@
 
 This is used to flash an action bar spell.
 
-<<code lua>>SpellFlashCore.FlashAction(SpellName, color, size, brightness, blink, NoMacros)<</code>>
+<<code lua>>SpellFlashCore.FlashAction(SpellName, color, size, brightness, blink, NoMacros, texture, fixedSize, fixedBrightness)<</code>>
 
 ===== ** Arguments:
 
@@ -21,6 +21,12 @@ This is used to flash an action bar spell.
 :		(boolean) If true will make the action button fade in and out.
 ; ** NoMacros
 :		(boolean) If true will skip checking for macros.
+; ** texture
+:		(string or number or nil) Path to texture (like: "Interface\\Cooldown\\starburst") or FileDataID (like: 131009) or AtlasID (like: "AftLevelup-WhiteStarBurst") or nil for default. Default: "Interface\\Cooldown\\star4"
+; ** fixedSize
+:		(boolean or nil) If true will stop pulse animation. Default: false
+; ** fixedBrightness
+:		(boolean or nil) If true will stop flicker animation. Default: false
 
 \\
 ----
@@ -30,7 +36,7 @@ This is used to flash an action bar spell.
 
 This is used to flash an action bar item.
 
-<<code lua>>SpellFlashCore.FlashItem(ItemName, color, size, brightness, blink, NoMacros)<</code>>
+<<code lua>>SpellFlashCore.FlashItem(ItemName, color, size, brightness, blink, NoMacros, texture, fixedSize, fixedBrightness)<</code>>
 
 ===== ** Arguments:
 
@@ -46,6 +52,12 @@ This is used to flash an action bar item.
 :		(boolean) If true will make the action button fade in and out.
 ; ** NoMacros
 :		(boolean) If true will skip checking for macros.
+; ** texture
+:		(string or number or nil) Path to texture (like: "Interface\\Cooldown\\starburst") or FileDataID (like: 131009) or AtlasID (like: "AftLevelup-WhiteStarBurst") or nil for default. Default: "Interface\\Cooldown\\star4"
+; ** fixedSize
+:		(boolean or nil) If true will stop pulse animation. Default: false
+; ** fixedBrightness
+:		(boolean or nil) If true will stop flicker animation. Default: false
 
 \\
 ----
@@ -55,7 +67,7 @@ This is used to flash an action bar item.
 
 This is used to flash a stance, form, presence, aura or aspect bar spell.
 
-<<code lua>>SpellFlashCore.FlashForm(SpellName, color, size, brightness, blink)<</code>>
+<<code lua>>SpellFlashCore.FlashForm(SpellName, color, size, brightness, blink, texture, fixedSize, fixedBrightness)<</code>>
 
 ===== ** Arguments:
 
@@ -69,6 +81,12 @@ This is used to flash a stance, form, presence, aura or aspect bar spell.
 :		(number or nil) Percent for the flash brightness or nil for default.
 ; ** blink
 :		(boolean) If true will make the action button fade in and out.
+; ** texture
+:		(string or number or nil) Path to texture (like: "Interface\\Cooldown\\starburst") or FileDataID (like: 131009) or AtlasID (like: "AftLevelup-WhiteStarBurst") or nil for default. Default: "Interface\\Cooldown\\star4"
+; ** fixedSize
+:		(boolean or nil) If true will stop pulse animation. Default: false
+; ** fixedBrightness
+:		(boolean or nil) If true will stop flicker animation. Default: false
 
 \\
 ----
@@ -78,7 +96,7 @@ This is used to flash a stance, form, presence, aura or aspect bar spell.
 
 This is used to flash a pet bar spell.
 
-<<code lua>>SpellFlashCore.FlashPet(SpellName, color, size, brightness, blink)<</code>>
+<<code lua>>SpellFlashCore.FlashPet(SpellName, color, size, brightness, blink, texture, fixedSize, fixedBrightness)<</code>>
 
 ===== ** Arguments:
 
@@ -92,6 +110,12 @@ This is used to flash a pet bar spell.
 :		(number or nil) Percent for the flash brightness or nil for default.
 ; ** blink
 :		(boolean) If true will make the action button fade in and out.
+; ** texture
+:		(string or number or nil) Path to texture (like: "Interface\\Cooldown\\starburst") or FileDataID (like: 131009) or AtlasID (like: "AftLevelup-WhiteStarBurst") or nil for default. Default: "Interface\\Cooldown\\star4"
+; ** fixedSize
+:		(boolean or nil) If true will stop pulse animation. Default: false
+; ** fixedBrightness
+:		(boolean or nil) If true will stop flicker animation. Default: false
 
 \\
 ----
@@ -101,7 +125,7 @@ This is used to flash a pet bar spell.
 
 This is used to flash a vehicle bar spell.
 
-<<code lua>>SpellFlashCore.FlashVehicle(SpellName, color, size, brightness, blink)<</code>>
+<<code lua>>SpellFlashCore.FlashVehicle(SpellName, color, size, brightness, blink, texture, fixedSize, fixedBrightness)<</code>>
 
 ===== ** Arguments:
 
@@ -115,6 +139,12 @@ This is used to flash a vehicle bar spell.
 :		(number or nil) Percent for the flash brightness or nil for default.
 ; ** blink
 :		(boolean) If true will make the action button fade in and out.
+; ** texture
+:		(string or number or nil) Path to texture (like: "Interface\\Cooldown\\starburst") or FileDataID (like: 131009) or AtlasID (like: "AftLevelup-WhiteStarBurst") or nil for default. Default: "Interface\\Cooldown\\star4"
+; ** fixedSize
+:		(boolean or nil) If true will stop pulse animation. Default: false
+; ** fixedBrightness
+:		(boolean or nil) If true will stop flicker animation. Default: false
 
 \\
 ----
@@ -124,7 +154,7 @@ This is used to flash a vehicle bar spell.
 
 This is used to flash the multiple totem call button.
 
-<<code lua>>SpellFlashCore.FlashTotemCall(color, size, brightness, blink)<</code>>
+<<code lua>>SpellFlashCore.FlashTotemCall(color, size, brightness, blink, texture, fixedSize, fixedBrightness)<</code>>
 
 ===== ** Arguments:
 
@@ -136,6 +166,12 @@ This is used to flash the multiple totem call button.
 :		(number or nil) Percent for the flash brightness or nil for default.
 ; ** blink
 :		(boolean) If true will make the action button fade in and out.
+; ** texture
+:		(string or number or nil) Path to texture (like: "Interface\\Cooldown\\starburst") or FileDataID (like: 131009) or AtlasID (like: "AftLevelup-WhiteStarBurst") or nil for default. Default: "Interface\\Cooldown\\star4"
+; ** fixedSize
+:		(boolean or nil) If true will stop pulse animation. Default: false
+; ** fixedBrightness
+:		(boolean or nil) If true will stop flicker animation. Default: false
 
 \\
 ----
@@ -145,7 +181,7 @@ This is used to flash the multiple totem call button.
 
 This is used to flash the multiple totem recall button.
 
-<<code lua>>SpellFlashCore.FlashTotemRecall(color, size, brightness, blink)<</code>>
+<<code lua>>SpellFlashCore.FlashTotemRecall(color, size, brightness, blink, texture, fixedSize, fixedBrightness)<</code>>
 
 ===== ** Arguments:
 
@@ -157,6 +193,12 @@ This is used to flash the multiple totem recall button.
 :		(number or nil) Percent for the flash brightness or nil for default.
 ; ** blink
 :		(boolean) If true will make the action button fade in and out.
+; ** texture
+:		(string or number or nil) Path to texture (like: "Interface\\Cooldown\\starburst") or FileDataID (like: 131009) or AtlasID (like: "AftLevelup-WhiteStarBurst") or nil for default. Default: "Interface\\Cooldown\\star4"
+; ** fixedSize
+:		(boolean or nil) If true will stop pulse animation. Default: false
+; ** fixedBrightness
+:		(boolean or nil) If true will stop flicker animation. Default: false
 
 \\
 ----
@@ -166,7 +208,7 @@ This is used to flash the multiple totem recall button.
 
 This is used to flash a frame.
 
-<<code lua>>SpellFlashCore.FlashFrame(frame, color, size, brightness, blink)<</code>>
+<<code lua>>SpellFlashCore.FlashFrame(frame, color, size, brightness, blink, texture, fixedSize, fixedBrightness)<</code>>
 
 ===== ** Arguments:
 
@@ -180,6 +222,12 @@ This is used to flash a frame.
 :		(number or nil) Percent for the flash brightness or nil for default.
 ; ** blink
 :		(boolean) If true will make the action button fade in and out.
+; ** texture
+:		(string or number or nil) Path to texture (like: "Interface\\Cooldown\\starburst") or FileDataID (like: 131009) or AtlasID (like: "AftLevelup-WhiteStarBurst") or nil for default. Default: "Interface\\Cooldown\\star4"
+; ** fixedSize
+:		(boolean or nil) If true will stop pulse animation. Default: false
+; ** fixedBrightness
+:		(boolean or nil) If true will stop flicker animation. Default: false
 
 \\
 ----
