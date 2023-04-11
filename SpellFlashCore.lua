@@ -1,4 +1,6 @@
-local MinBuild, OverBuild, Build = 100000, 0, select(4, GetBuildInfo())
+local MinBuild, OverBuild = 100000, 0
+local BuildStr, _, _, Build = GetBuildInfo()
+if BuildStr:match("^3.4.") then MinBuild = 30400 end
 if Build < (MinBuild or 0) or ( (OverBuild or 0) > 0 and Build >= OverBuild ) then return end
 local AddonName, a = ...
 a.AddonName = AddonName
@@ -666,7 +668,7 @@ Event.ACTIONBAR_HIDEGRID = RegisterAll
 Event.LEARNED_SPELL_IN_TAB = RegisterAll
 Event.CHARACTER_POINTS_CHANGED = RegisterAll
 Event.ACTIVE_TALENT_GROUP_CHANGED = RegisterAll
-Event.PLAYER_SPECIALIZATION_CHANGED = RegisterAll
+if Build >= 100000 then Event.PLAYER_SPECIALIZATION_CHANGED = RegisterAll end -- Does not exist in Wrath.
 Event.UPDATE_MACROS = RegisterAll
 Event.VEHICLE_UPDATE = RegisterAll
 function Event.UNIT_PET(event, arg1)
